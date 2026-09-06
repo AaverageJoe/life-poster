@@ -1,0 +1,16 @@
+[Unit]
+Description=Life Poster - Inky Impression web control panel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__APPDIR__
+Environment=PORT=8080
+ExecStart=__PYTHON__ __APPDIR__/serve.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

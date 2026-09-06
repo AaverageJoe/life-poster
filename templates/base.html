@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Life Poster{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <a class="brand" href="{{ url_for('dashboard') }}">Life&nbsp;Poster</a>
+  <nav>
+    {% set m = cfg.mode %}
+    <a href="{{ url_for('dashboard') }}" class="{{ 'on' if request.endpoint=='dashboard' }}">Dashboard</a>
+    <a href="{{ url_for('poster_page') }}" class="{{ 'on' if request.endpoint=='poster_page' }}{{ ' active' if m=='poster' }}">Poster</a>
+    <a href="{{ url_for('control_page') }}" class="{{ 'on' if request.endpoint=='control_page' }}{{ ' active' if m=='control' }}">Control</a>
+    <a href="{{ url_for('info_page') }}" class="{{ 'on' if request.endpoint=='info_page' }}{{ ' active' if m=='info' }}">Info</a>
+    <a href="{{ url_for('draw_page') }}" class="{{ 'on' if request.endpoint=='draw_page' }}{{ ' active' if m=='draw' }}">Draw</a>
+    <a href="{{ url_for('settings_page') }}" class="{{ 'on' if request.endpoint=='settings_page' }}">Settings</a>
+  </nav>
+</header>
+
+<main>
+  <section class="content">
+    {% block content %}{% endblock %}
+  </section>
+
+  <aside class="panel">
+    <h2>On the display</h2>
+    <div class="preview">
+      <img id="preview" src="{{ url_for('api_preview') }}" alt="current display">
+    </div>
+    <dl class="stat">
+      <dt>Mode</dt><dd id="s-mode">{{ cfg.mode }}</dd>
+      <dt>Panel</dt><dd id="s-device">{{ status.device }}</dd>
+      <dt>State</dt><dd id="s-busy">{{ 'refreshing…' if status.busy else 'idle' }}</dd>
+      <dt>Source</dt><dd id="s-source">{{ status.last_source or '—' }}</dd>
+    </dl>
+    {% if status.device == 'mock' %}
+    <p class="warn">No Inky panel detected — running in mock mode. The preview
+    above still shows what would be sent.</p>
+    {% endif %}
+    {% if status.error %}<p class="warn">Last error: {{ status.error }}</p>{% endif %}
+    <form method="post" action="{{ url_for('display_refresh') }}">
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit">Re-send now</button>
+    </form>
+    <form method="post" action="{{ url_for('display_clear') }}"
+          onsubmit="return confirm('Blank the display to white?')">
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="ghost">Clear display</button>
+    </form>
+  </aside>
+</main>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

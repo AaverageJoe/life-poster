@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Info · Life Poster{% endblock %}
+{% block content %}
+<h1>Info mode</h1>
+<p class="lede">Big clock, day and date, and an optional headline strip.</p>
+
+<form method="post" action="{{ url_for('info_save') }}" class="box">
+  <div class="fields">
+    <label>Headline (optional)
+      <input type="text" name="headline" maxlength="120"
+             value="{{ cfg.info.headline }}" placeholder="e.g. Bins out tonight">
+    </label>
+    <label>Time format
+      <select name="time_format">
+        <option value="24h" {{ 'selected' if cfg.info.time_format=='24h' }}>24-hour</option>
+        <option value="12h" {{ 'selected' if cfg.info.time_format=='12h' }}>12-hour (AM/PM)</option>
+      </select>
+    </label>
+    <label class="check">
+      <input type="checkbox" name="show_seconds" {{ 'checked' if cfg.info.show_seconds }}>
+      Show seconds (forces a refresh every few seconds — hard on the panel)
+    </label>
+    <label>Refresh every N minutes
+      <input type="number" name="refresh_minutes" min="1" max="1440"
+             value="{{ cfg.info.refresh_minutes }}">
+    </label>
+    <label>Background <input type="color" name="bg" value="{{ cfg.info.bg }}"></label>
+    <label>Text <input type="color" name="fg" value="{{ cfg.info.fg }}"></label>
+    <label>Accent <input type="color" name="accent" value="{{ cfg.info.accent }}"></label>
+    <label class="check">
+      <input type="checkbox" name="activate" checked> Switch to Info mode on save
+    </label>
+  </div>
+  <button type="submit">Save</button>
+  <p class="hint">Colours are dithered to the panel's 6-colour palette
+  (black, white, red, yellow, blue, green), so pick strong, saturated values.</p>
+</form>
+{% endblock %}

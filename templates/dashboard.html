@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Life Poster{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<p class="lede">Pick what the display should be doing right now.</p>
+
+<div class="grid">
+  {% for key, label, blurb in [
+      ('poster', 'Poster', 'Rotate through a set of images on a timer.'),
+      ('control', 'Control', 'Push one uploaded image and keep it up.'),
+      ('info', 'Info', 'Show the time, date and an optional headline.'),
+      ('draw', 'Draw', 'Sketch in the browser, then push it to the panel.')] %}
+  <form method="post" action="{{ url_for('set_mode') }}" class="card {{ 'current' if cfg.mode==key }}">
+    <input type="hidden" name="mode" value="{{ key }}">
+    <h3>{{ label }}{% if cfg.mode==key %} <span class="dot">live</span>{% endif %}</h3>
+    <p>{{ blurb }}</p>
+    <div class="row">
+      <button type="submit">{{ 'Active' if cfg.mode==key else 'Activate' }}</button>
+      <a href="{{ url_for(key ~ '_page') }}">Configure →</a>
+    </div>
+  </form>
+  {% endfor %}
+</div>
+
+<h2>Notes</h2>
+<ul class="notes">
+  <li>A full-colour refresh on the 7.3" Spectra 6 panel takes roughly 30–40&nbsp;seconds. The
+  page stays responsive during that time; the panel shows <em>refreshing…</em>.</li>
+  <li>Frequent refreshes cause ghosting and shorten panel life — keep Info mode's refresh
+  interval reasonable (10&nbsp;min+).</li>
+</ul>
+{% endblock %}

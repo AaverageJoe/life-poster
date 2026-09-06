@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Draw · Life Poster{% endblock %}
+{% block content %}
+<h1>Draw mode</h1>
+<p class="lede">Sketch on the canvas. It previews live here in the browser; hit
+<strong>Push to display</strong> to send it to the panel (one ~35&nbsp;s refresh).</p>
+
+<div class="drawwrap">
+  <div class="palette" id="palette">
+    <button type="button" class="sw" data-color="#000000" style="background:#000" title="Black"></button>
+    <button type="button" class="sw" data-color="#ffffff" style="background:#fff" title="White"></button>
+    <button type="button" class="sw" data-color="#e12729" style="background:#e12729" title="Red"></button>
+    <button type="button" class="sw" data-color="#f8cc1b" style="background:#f8cc1b" title="Yellow"></button>
+    <button type="button" class="sw" data-color="#1f4ae0" style="background:#1f4ae0" title="Blue"></button>
+    <button type="button" class="sw" data-color="#0b8a3b" style="background:#0b8a3b" title="Green"></button>
+    <span class="sep"></span>
+    <label>Brush <input type="range" id="size" min="2" max="48" value="8"></label>
+    <button type="button" id="eraser">Eraser</button>
+    <button type="button" id="undo">Undo</button>
+    <button type="button" id="clear">Clear</button>
+  </div>
+
+  <div class="canvasbox">
+    <canvas id="pad" width="800" height="480"></canvas>
+  </div>
+
+  <div class="row">
+    <label class="check"><input type="checkbox" id="autopreview">
+      Auto-preview panel output (round-trips to the Pi on each stroke)</label>
+    <button type="button" id="previewbtn">Preview as panel</button>
+    <button type="button" id="pushbtn" class="primary">Push to display</button>
+    <span id="drawmsg" class="msg"></span>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='draw.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,5 @@
+# Installed by pip inside the venv. The venv is created with
+# --system-site-packages, so numpy, Pillow, spidev, lgpio/gpiod come from apt.
+Flask==3.0.3
+waitress==3.0.2
+inky>=2.1.0

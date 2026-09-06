@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Poster · Life Poster{% endblock %}
+{% block content %}
+<h1>Poster mode</h1>
+<p class="lede">A playlist of images, advanced on a timer.</p>
+
+<form method="post" action="{{ url_for('poster_upload') }}" enctype="multipart/form-data" class="box">
+  <h3>Add images</h3>
+  <input type="file" name="images" accept="image/*" multiple required>
+  <button type="submit">Upload</button>
+</form>
+
+<form method="post" action="{{ url_for('poster_save') }}" class="box">
+  <h3>Playlist ({{ cfg.poster.playlist|length }})</h3>
+  {% if cfg.poster.playlist %}
+  <ol id="playlist" class="thumbs">
+    {% for name in cfg.poster.playlist %}
+    <li draggable="true" data-name="{{ name }}">
+      <img src="{{ url_for('uploads', name=name) }}" alt="">
+      <input type="hidden" name="order" value="{{ name }}">
+      <button type="button" class="x" data-remove="{{ name }}" title="Remove">×</button>
+    </li>
+    {% endfor %}
+  </ol>
+  <p class="hint">Drag thumbnails to reorder.</p>
+  {% else %}
+  <p class="hint">No images yet — upload some above.</p>
+  {% endif %}
+
+  <div class="fields">
+    <label>Minutes per image
+      <input type="number" name="interval_minutes" min="1" max="1440"
+             value="{{ cfg.poster.interval_minutes }}">
+    </label>
+    <label class="check">
+      <input type="checkbox" name="shuffle" {{ 'checked' if cfg.poster.shuffle }}>
+      Shuffle order
+    </label>
+    <label class="check">
+      <input type="checkbox" name="activate" checked> Switch to Poster mode on save
+    </label>
+  </div>
+  <button type="submit">Save playlist</button>
+</form>
+
+<form method="post" action="{{ url_for('poster_remove') }}" id="removeForm" hidden>
+  <input type="hidden" name="name" id="removeName">
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    const list = document.getElementById('playlist');
+    if (!list) return;
+    list.addEventListener('click', e => {
+      const btn = e.target.closest('[data-remove]');
+      if (!btn) return;
+      document.getElementById('removeName').value = btn.dataset.remove;
+      document.getElementById('removeForm').submit();
+    });
+    let dragged;
+    list.addEventListener('dragstart', e => { dragged = e.target.closest('li'); });
+    list.addEventListener('dragover', e => {
+      e.preventDefault();
+      const li = e.target.closest('li');
+      if (li && li !== dragged) {
+        const r = li.getBoundingClientRect();
+        list.insertBefore(dragged, (e.clientY - r.top) / r.height > 0.5 ? li.nextSibling : li);
+      }
+    });
+  })();
+</script>
+{% endblock %}
