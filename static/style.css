@@ -58,6 +58,18 @@ input[type=file]{color:var(--dim)}
 .thumbs img{width:100%;height:100%;object-fit:cover}
 .thumbs .x{position:absolute;top:2px;right:2px}
 .bigthumb{max-width:100%;border:1px solid var(--line);border-radius:8px}
+
+.cards{list-style:none;padding:0;margin:.4rem 0;display:flex;flex-direction:column;gap:.7rem}
+.cards li{display:flex;gap:.9rem;padding:.6rem;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:grab}
+.cards li.showing{border-color:var(--good)}
+.cards .thumb{width:200px;flex:0 0 200px;aspect-ratio:800/480;object-fit:cover;background:#000;border-radius:6px}
+.cards .meta{display:flex;flex-direction:column;gap:.5rem;justify-content:center;flex:1;min-width:0}
+.cards .meta .row{gap:.5rem}
+.cards .meta label{flex-direction:row;align-items:center;gap:.35rem}
+.cards select{padding:.3rem .4rem}
+button.mini{padding:.3rem .55rem;font-size:.82rem;font-weight:600}
+.tag{font-size:.72rem;color:var(--good);border:1px solid var(--good);border-radius:20px;padding:.05rem .45rem;align-self:center}
+@media(max-width:560px){.cards li{flex-direction:column}.cards .thumb{width:100%;flex-basis:auto}}
 .notes{color:var(--dim)}
 .warn{color:var(--warn)}
 

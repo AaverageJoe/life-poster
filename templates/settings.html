@@ -2,19 +2,31 @@
 {% block title %}Settings · Life Poster{% endblock %}
 {% block content %}
 <h1>Display &amp; picture settings</h1>
-<p class="lede">Applied to every image before it is dithered and sent to the panel.</p>
+<p class="lede">Applied to every image before it is dithered and sent to the panel.
+Poster images can override rotation / fit individually.</p>
 
 <form method="post" action="{{ url_for('settings_save') }}" class="box">
   <div class="fields">
-    <label>Rotation
+    <label>Boot into
+      <select name="boot_mode">
+        <option value="poster" {{ 'selected' if cfg.boot_mode=='poster' }}>Poster mode</option>
+        <option value="info" {{ 'selected' if cfg.boot_mode=='info' }}>Info mode</option>
+        <option value="control" {{ 'selected' if cfg.boot_mode=='control' }}>Control mode</option>
+        <option value="draw" {{ 'selected' if cfg.boot_mode=='draw' }}>Draw mode</option>
+        <option value="last" {{ 'selected' if cfg.boot_mode=='last' }}>Whatever was last active</option>
+      </select>
+      <span class="hint">Which mode the Pi starts in after a reboot.</span>
+    </label>
+
+    <label>Default rotation
       <select name="rotation">
-        {% for deg in [0, 90, 180, 270] %}
+        {% for deg in rotations %}
         <option value="{{ deg }}" {{ 'selected' if cfg.display.rotation==deg }}>{{ deg }}°</option>
         {% endfor %}
       </select>
     </label>
 
-    <label>Fit
+    <label>Default fit
       <select name="fit">
         <option value="cover" {{ 'selected' if cfg.display.fit=='cover' }}>Cover (fill, crop overflow)</option>
         <option value="contain" {{ 'selected' if cfg.display.fit=='contain' }}>Contain (whole image, letterbox)</option>
@@ -36,6 +48,15 @@
       Auto-enhance (mild contrast / sharpness / colour boost)
     </label>
   </div>
+  <h3>Overnight sleep</h3>
+  <div class="fields">
+    <label class="check">
+      <input type="checkbox" name="sleep_enabled" {{ 'checked' if cfg.schedule.sleep_enabled }}>
+      Blank the panel between the times below (reduces ghosting &amp; wear)
+    </label>
+    <label>Sleep at <input type="time" name="sleep_start" value="{{ cfg.schedule.sleep_start }}"></label>
+    <label>Wake at <input type="time" name="sleep_end" value="{{ cfg.schedule.sleep_end }}"></label>
+  </div>
   <button type="submit">Save settings</button>
 </form>
 
@@ -44,6 +65,7 @@
   <dl class="stat">
     <dt>Driver</dt><dd>{{ status.device }}</dd>
     <dt>Resolution</dt><dd>{{ status.resolution[0] }} × {{ status.resolution[1] }}</dd>
+    <dt>State</dt><dd>{{ 'asleep' if status.asleep else ('refreshing' if status.busy else 'idle') }}</dd>
   </dl>
 </div>
 {% endblock %}

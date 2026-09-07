@@ -2,27 +2,53 @@
 {% block title %}Poster · Life Poster{% endblock %}
 {% block content %}
 <h1>Poster mode</h1>
-<p class="lede">A playlist of images, advanced on a timer.</p>
+<p class="lede">A playlist of images, advanced on a timer. Each image can have its
+own rotation and fit.</p>
 
 <form method="post" action="{{ url_for('poster_upload') }}" enctype="multipart/form-data" class="box">
   <h3>Add images</h3>
   <input type="file" name="images" accept="image/*" multiple required>
   <button type="submit">Upload</button>
+  <p class="hint">Big photos are downscaled on the way in (long edge {{ 1600 }} px).</p>
 </form>
 
 <form method="post" action="{{ url_for('poster_save') }}" class="box">
   <h3>Playlist ({{ cfg.poster.playlist|length }})</h3>
   {% if cfg.poster.playlist %}
-  <ol id="playlist" class="thumbs">
-    {% for name in cfg.poster.playlist %}
-    <li draggable="true" data-name="{{ name }}">
-      <img src="{{ url_for('uploads', name=name) }}" alt="">
-      <input type="hidden" name="order" value="{{ name }}">
-      <button type="button" class="x" data-remove="{{ name }}" title="Remove">×</button>
+  <ol id="playlist" class="cards">
+    {% for e in cfg.poster.playlist %}
+    <li draggable="true" data-name="{{ e.name }}"
+        class="{{ 'showing' if loop.index0 == status.poster_index }}">
+      <input type="hidden" name="order" value="{{ e.name }}">
+      <img class="thumb" src="{{ url_for('api_render', name=e.name, rotation=e.rotation, fit=e.fit or cfg.display.fit) }}" alt="">
+      <div class="meta">
+        <div class="row">
+          <label>Rotate
+            <select data-rot="{{ e.name }}">
+              {% for deg in rotations %}
+              <option value="{{ deg }}" {{ 'selected' if e.rotation==deg }}>{{ deg }}°</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>Fit
+            <select data-fit="{{ e.name }}">
+              <option value="" {{ 'selected' if not e.fit }}>default</option>
+              <option value="cover" {{ 'selected' if e.fit=='cover' }}>cover</option>
+              <option value="contain" {{ 'selected' if e.fit=='contain' }}>contain</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <button type="button" class="mini" data-apply="{{ e.name }}">Save image</button>
+          <button type="button" class="mini primary" data-shownow="{{ e.name }}">Show now</button>
+          <button type="button" class="mini x" data-remove="{{ e.name }}">Remove</button>
+          {% if loop.index0 == status.poster_index %}<span class="tag">on display</span>{% endif %}
+        </div>
+      </div>
     </li>
     {% endfor %}
   </ol>
-  <p class="hint">Drag thumbnails to reorder.</p>
+  <p class="hint">Drag cards to reorder, then Save playlist.</p>
   {% else %}
   <p class="hint">No images yet — upload some above.</p>
   {% endif %}
@@ -43,32 +69,62 @@
   <button type="submit">Save playlist</button>
 </form>
 
-<form method="post" action="{{ url_for('poster_remove') }}" id="removeForm" hidden>
-  <input type="hidden" name="name" id="removeName">
+<form method="post" action="{{ url_for('poster_item') }}" id="itemForm" hidden>
+  <input type="hidden" name="name" id="itemName">
+  <input type="hidden" name="rotation" id="itemRot">
+  <input type="hidden" name="fit" id="itemFit">
 </form>
+<form method="post" action="{{ url_for('poster_show') }}" id="showForm" hidden>
+  <input type="hidden" name="name" id="showName"></form>
+<form method="post" action="{{ url_for('poster_remove') }}" id="removeForm" hidden>
+  <input type="hidden" name="name" id="removeName"></form>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  (function () {
-    const list = document.getElementById('playlist');
-    if (!list) return;
-    list.addEventListener('click', e => {
-      const btn = e.target.closest('[data-remove]');
-      if (!btn) return;
-      document.getElementById('removeName').value = btn.dataset.remove;
-      document.getElementById('removeForm').submit();
-    });
-    let dragged;
-    list.addEventListener('dragstart', e => { dragged = e.target.closest('li'); });
-    list.addEventListener('dragover', e => {
-      e.preventDefault();
-      const li = e.target.closest('li');
-      if (li && li !== dragged) {
-        const r = li.getBoundingClientRect();
-        list.insertBefore(dragged, (e.clientY - r.top) / r.height > 0.5 ? li.nextSibling : li);
-      }
-    });
-  })();
+(function () {
+  const list = document.getElementById('playlist');
+  if (!list) return;
+
+  function submitWith(formId, fields) {
+    for (const [k, v] of Object.entries(fields)) document.getElementById(k).value = v;
+    document.getElementById(formId).submit();
+  }
+
+  list.addEventListener('click', e => {
+    const name = t => e.target.dataset[t];
+    if (name('remove')) submitWith('removeForm', { removeName: name('remove') });
+    else if (name('shownow')) submitWith('showForm', { showName: name('shownow') });
+    else if (name('apply')) {
+      const n = name('apply');
+      const rot = list.querySelector(`[data-rot="${CSS.escape(n)}"]`).value;
+      const fit = list.querySelector(`[data-fit="${CSS.escape(n)}"]`).value;
+      submitWith('itemForm', { itemName: n, itemRot: rot, itemFit: fit });
+    }
+  });
+
+  // live thumbnail refresh when rotation/fit changes (before saving)
+  list.addEventListener('change', e => {
+    const n = e.target.dataset.rot || e.target.dataset.fit;
+    if (!n) return;
+    const li = list.querySelector(`li[data-name="${CSS.escape(n)}"]`);
+    const rot = li.querySelector('[data-rot]').value;
+    const fit = li.querySelector('[data-fit]').value || '{{ cfg.display.fit }}';
+    li.querySelector('img.thumb').src =
+      `{{ url_for('api_render', name='__N__') }}`.replace('__N__', encodeURIComponent(n)) +
+      `?rotation=${rot}&fit=${fit}&t=${Date.now()}`;
+  });
+
+  let dragged;
+  list.addEventListener('dragstart', e => { dragged = e.target.closest('li'); });
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    const li = e.target.closest('li');
+    if (li && li !== dragged) {
+      const r = li.getBoundingClientRect();
+      list.insertBefore(dragged, (e.clientY - r.top) / r.height > 0.5 ? li.nextSibling : li);
+    }
+  });
+})();
 </script>
 {% endblock %}

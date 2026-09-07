@@ -2,18 +2,35 @@
 {% block title %}Control · Life Poster{% endblock %}
 {% block content %}
 <h1>Control mode</h1>
-<p class="lede">Upload a single image and it goes straight to the panel.</p>
+<p class="lede">Upload an image, check the preview, then send it to the panel.</p>
 
 <form method="post" action="{{ url_for('control_upload') }}" enctype="multipart/form-data" class="box">
   <input type="file" name="image" accept="image/*" required>
-  <button type="submit">Upload &amp; show</button>
-  <p class="hint">JPG / PNG / GIF / BMP / WEBP, up to 24&nbsp;MB. It is fitted to
-  800×480 using the current picture settings.</p>
+  <button type="submit">Upload</button>
+  <p class="hint">JPG / PNG / GIF / BMP / WEBP, up to 24&nbsp;MB. Nothing is sent to
+  the panel until you press <em>Send to display</em>.</p>
 </form>
+
+{% if cfg.control.pending %}
+<div class="box stage">
+  <h3>Ready to send — preview</h3>
+  <img class="bigthumb" src="{{ url_for('api_render', name=cfg.control.pending, t=status.last_shown_at) }}" alt="panel preview">
+  <p class="hint">This is exactly how it will be fitted to the 800×480 panel
+  (rotation / fit come from <a href="{{ url_for('settings_page') }}">Settings</a>).</p>
+  <div class="row">
+    <form method="post" action="{{ url_for('control_confirm') }}">
+      <button type="submit" class="primary">Send to display</button>
+    </form>
+    <form method="post" action="{{ url_for('control_discard') }}">
+      <button type="submit" class="ghost">Discard</button>
+    </form>
+  </div>
+</div>
+{% endif %}
 
 {% if cfg.control.current %}
 <div class="box">
-  <h3>Current image</h3>
+  <h3>Currently on the panel</h3>
   <img class="bigthumb" src="{{ url_for('uploads', name=cfg.control.current) }}" alt="">
 </div>
 {% endif %}

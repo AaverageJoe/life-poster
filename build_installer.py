@@ -17,7 +17,7 @@ INCLUDE = [
     "app.py", "serve.py", "config.py", "render.py", "display.py", "worker.py",
     "requirements.txt", "install.sh", "lifeposter.service.tmpl", "README.md",
 ]
-INCLUDE_DIRS = ["templates", "static"]
+INCLUDE_DIRS = ["templates", "static", "scripts"]
 
 
 def _add(tar: tarfile.TarFile, path: str, arc: str):

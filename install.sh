@@ -24,6 +24,9 @@ sudo raspi-config nonint do_spi 0 || true
 sudo raspi-config nonint do_i2c 0 || true
 for g in spi gpio i2c; do sudo adduser "$RUN_USER" "$g" >/dev/null 2>&1 || true; done
 
+echo "==> Sizing swap (Pi Zero W has only ~100 MB by default)…"
+bash "$APPDIR/scripts/set-swap.sh" 1024 || echo "   (swap resize skipped - do it later with scripts/set-swap.sh)"
+
 # --------------------------------------------------------------------------- #
 # 2. Pick a Python venv that already has a working `inky`, else build one
 # --------------------------------------------------------------------------- #

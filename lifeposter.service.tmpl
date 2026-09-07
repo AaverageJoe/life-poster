@@ -2,13 +2,16 @@
 Description=Life Poster - Inky Impression web control panel
 After=network-online.target
 Wants=network-online.target
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 User=__USER__
 WorkingDirectory=__APPDIR__
 Environment=PORT=8080
+Environment=MALLOC_TRIM_THRESHOLD_=100000
 ExecStart=__PYTHON__ __APPDIR__/serve.py
+Nice=5
 Restart=on-failure
 RestartSec=5
 
