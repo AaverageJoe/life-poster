@@ -12,6 +12,7 @@ from flask import (Flask, abort, jsonify, redirect, render_template, request,
 from PIL import Image, ImageOps
 from werkzeug.utils import secure_filename
 
+import buttons
 import config
 import render
 import worker
@@ -336,6 +337,8 @@ def settings_save():
         bm = request.form.get("boot_mode", "poster")
         c["boot_mode"] = bm if bm in ("last", *MODES) else "poster"
 
+        c["buttons"]["enabled"] = request.form.get("buttons_enabled") == "on"
+
         s = c["schedule"]
         s["sleep_enabled"] = request.form.get("sleep_enabled") == "on"
         for key in ("sleep_start", "sleep_end"):
@@ -412,6 +415,7 @@ def _apply_boot_mode():
 
 _apply_boot_mode()
 worker.start()
+buttons.start()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)), debug=True)

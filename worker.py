@@ -60,6 +60,30 @@ def request_show(img: Image.Image, source: str):
     _wake.set()
 
 
+def poster_step(delta: int):
+    """Move the poster playlist by `delta` and show that image now (board buttons)."""
+    pl = config.get()["poster"]["playlist"]
+    if not pl:
+        config.save(lambda c: c.__setitem__("mode", "poster"))
+        bump_generation()
+        return
+
+    def mut(c):
+        n = len(c["poster"]["playlist"])
+        c["poster"]["index"] = (int(c["poster"]["index"]) + delta) % n
+        c["mode"] = "poster"
+    config.save(mut)
+    bump_generation()
+
+
+def cycle_mode():
+    order = list(config.MODES)
+    cur = config.get()["mode"]
+    nxt = order[(order.index(cur) + 1) % len(order)] if cur in order else order[0]
+    config.save(lambda c: c.__setitem__("mode", nxt))
+    bump_generation()
+
+
 def status() -> dict:
     cfg = config.get()
     c = _controller

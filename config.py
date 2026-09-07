@@ -56,6 +56,7 @@ DEFAULTS = {
     },
     "control": {"current": None, "pending": None},
     "draw": {"last": None},
+    "buttons": {"enabled": True},  # A/B step poster, C cycle mode, D refresh
     "schedule": {                 # blank the panel overnight to reduce wear
         "sleep_enabled": False,
         "sleep_start": "23:00",

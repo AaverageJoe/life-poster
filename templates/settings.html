@@ -48,6 +48,16 @@ Poster images can override rotation / fit individually.</p>
       Auto-enhance (mild contrast / sharpness / colour boost)
     </label>
   </div>
+  <h3>Board buttons</h3>
+  <div class="fields">
+    <label class="check">
+      <input type="checkbox" name="buttons_enabled" {{ 'checked' if cfg.buttons.enabled }}>
+      Use the 4 buttons on the Inky board
+    </label>
+    <p class="hint"><b>A</b> previous image &nbsp;·&nbsp; <b>B</b> next image
+      &nbsp;·&nbsp; <b>C</b> change mode &nbsp;·&nbsp; <b>D</b> refresh the panel</p>
+  </div>
+
   <h3>Overnight sleep</h3>
   <div class="fields">
     <label class="check">
